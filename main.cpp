@@ -27,21 +27,6 @@ std::string get_file_contents(const char *filename) {
     throw(errno);
 }
 
-std::deque<unsigned int> index_clears(std::string code) {
-    std::deque<unsigned int> clears = {};
-
-    for (unsigned int i = 0; i < code.size(); i++) {
-        if (code[i] == '[') {
-            if (code[i + 1] == '-') {
-                if (code[i + 2] == ']') {
-                    clears.push_back(i);
-                }
-            }
-        }
-    }
-    return clears;
-}
-
 enum CommandType {
     POINTER_INC,
     POINTER_DEC,
