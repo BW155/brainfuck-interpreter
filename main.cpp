@@ -22,9 +22,9 @@ std::string get_file_contents(const char *filename) {
         std::rewind(fp);
         std::fread(&contents[0], 1, contents.size(), fp);
         std::fclose(fp);
-        return(contents);
+        return (contents);
     }
-    throw(errno);
+    throw (errno);
 }
 
 enum CommandType {
@@ -60,10 +60,7 @@ void compile(std::string code, Command (&result)[12000]) {
             case BF_OP_PINC:
                 temp_chars.push_back(BF_OP_PINC);
                 if (code[p + 1] != BF_OP_PINC) {
-                    result[cur_command_row] = Command {
-                        POINTER_INC,
-                        static_cast<unsigned int>(temp_chars.size())
-                    };
+                    result[cur_command_row] = Command {POINTER_INC, static_cast<unsigned int>(temp_chars.size())};
                     cur_command_row = -1;
                     temp_chars.clear();
                 }
@@ -71,10 +68,7 @@ void compile(std::string code, Command (&result)[12000]) {
             case BF_OP_PDEC:
                 temp_chars.push_back(BF_OP_PDEC);
                 if (code[p + 1] != BF_OP_PDEC) {
-                    result[cur_command_row] = Command {
-                        POINTER_DEC,
-                        static_cast<unsigned int>(temp_chars.size())
-                    };
+                    result[cur_command_row] = Command {POINTER_DEC, static_cast<unsigned int>(temp_chars.size())};
                     cur_command_row = -1;
                     temp_chars.clear();
                 }
@@ -82,10 +76,7 @@ void compile(std::string code, Command (&result)[12000]) {
             case BF_OP_VINC:
                 temp_chars.push_back(BF_OP_VINC);
                 if (code[p + 1] != BF_OP_VINC) {
-                    result[cur_command_row] = Command {
-                        VALUE_INC,
-                        static_cast<unsigned int>(temp_chars.size())
-                    };
+                    result[cur_command_row] = Command {VALUE_INC, static_cast<unsigned int>(temp_chars.size())};
                     cur_command_row = -1;
                     temp_chars.clear();
                 }
@@ -93,28 +84,19 @@ void compile(std::string code, Command (&result)[12000]) {
             case BF_OP_VDEC:
                 temp_chars.push_back(BF_OP_VDEC);
                 if (code[p + 1] != BF_OP_VDEC) {
-                    result[cur_command_row] = Command {
-                        VALUE_DEC,
-                        static_cast<unsigned int>(temp_chars.size())
-                    };
+                    result[cur_command_row] = Command {VALUE_DEC, static_cast<unsigned int>(temp_chars.size())};
                     cur_command_row = -1;
                     temp_chars.clear();
                 }
                 break;
             case BF_OP_LSTART:
                 if (code[p + 1] == '-' && code[p + 2] == ']') {
-                    result[p] = Command {
-                        CLEAR,
-                        3
-                    };
+                    result[p] = Command {CLEAR, 3};
                     cur_command_row = -1;
                     p += 2;
                     break;
                 }
-                result[p] = Command {
-                    BRACK_LEFT,
-                    1
-                };
+                result[p] = Command {BRACK_LEFT, 1};
                 cur_command_row = -1;
                 temp_brackets.push_back(p);
                 break;
@@ -122,25 +104,15 @@ void compile(std::string code, Command (&result)[12000]) {
                 start = temp_brackets[temp_brackets.size() - 1];
                 temp_brackets.pop_back();
                 result[start].pointer = p;
-                result[p] = Command {
-                    BRACK_RIGHT,
-                    1,
-                    start
-                };
+                result[p] = Command {BRACK_RIGHT, 1, start};
                 cur_command_row = -1;
                 break;
             case BF_OP_OUT:
-                result[p] = Command {
-                    OUT,
-                    1
-                };
+                result[p] = Command {OUT, 1};
                 cur_command_row = -1;
                 break;
             case BF_OP_IN:
-                result[p] = Command {
-                    IN,
-                    1
-                };
+                result[p] = Command {IN, 1};
                 cur_command_row = -1;
                 break;
         }
@@ -148,7 +120,7 @@ void compile(std::string code, Command (&result)[12000]) {
     }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     std::string code = get_file_contents(argv[1]);
     code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
 
