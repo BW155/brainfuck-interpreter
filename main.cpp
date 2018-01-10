@@ -62,6 +62,110 @@ std::deque<unsigned int> index_clears(std::string code) {
     return clears;
 }
 
+enum CommandType {
+    POINTER_INC,
+    POINTER_DEC,
+    VALUE_DEC,
+    VALUE_INC,
+    BRACK_LEFT,
+    BRACK_RIGHT,
+    CLEAR,
+    OUT,
+    IN,
+};
+
+struct Command {
+    CommandType command_type;
+    unsigned int duplicates;
+};
+
+void compile(std::string code, Command (&result)[12000]) {
+    std::vector<char> temp_chars = {};
+    int cur_command_row = -1;
+    for(int p = 0; p < code.size(); p++) {
+        if (cur_command_row == -1) {
+            cur_command_row = p;
+        }
+        switch (code[p]) {
+            case BF_OP_PINC:
+                temp_chars.push_back(BF_OP_PINC);
+                if (code[p + 1] != BF_OP_PINC) {
+                    result[cur_command_row] = Command {
+                        CommandType::POINTER_INC,
+                        static_cast<unsigned int>(temp_chars.size())
+                    };
+                    cur_command_row = -1;
+                    temp_chars.clear();
+                }
+                break;
+            case BF_OP_PDEC:
+                temp_chars.push_back(BF_OP_PDEC);
+                if (code[p + 1] != BF_OP_PDEC) {
+                    result[cur_command_row] = Command {
+                        CommandType::POINTER_DEC,
+                        static_cast<unsigned int>(temp_chars.size())
+                    };
+                    cur_command_row = -1;
+                    temp_chars.clear();
+                }
+                break;
+            case BF_OP_VINC:
+                temp_chars.push_back(BF_OP_VINC);
+                if (code[p + 1] != BF_OP_VINC) {
+                    result[cur_command_row] = Command {
+                        CommandType::VALUE_INC,
+                        static_cast<unsigned int>(temp_chars.size())
+                    };
+                    cur_command_row = -1;
+                    temp_chars.clear();
+                }
+                break;
+            case BF_OP_VDEC:
+                temp_chars.push_back(BF_OP_VDEC);
+                if (code[p + 1] != BF_OP_VDEC) {
+                    result[cur_command_row] = Command {
+                        CommandType::VALUE_DEC,
+                        static_cast<unsigned int>(temp_chars.size())
+                    };
+                    cur_command_row = -1;
+                    temp_chars.clear();
+                }
+                break;
+            case BF_OP_LSTART:
+                /*if (code[p + 1] == '-' && code[p + 2] == ']') {
+                    result[p] = Command {
+                        CommandType::CLEAR,
+                        3
+                    };
+                    cur_command_row = -1;
+                    temp_chars.clear();
+                    p += 2;
+                    break;
+                }*/
+                result[p] = Command {
+                    CommandType::BRACK_LEFT,
+                    1
+                };
+                cur_command_row = -1;
+                break;
+            case BF_OP_LEND:
+                result[p] = Command {
+                    CommandType::BRACK_RIGHT,
+                    1
+                };
+                cur_command_row = -1;
+                break;
+            case BF_OP_OUT:
+                result[p] = Command {
+                    CommandType::OUT,
+                    1
+                };
+                cur_command_row = -1;
+                break;
+        }
+    }
+}
+
 int main(int argc, char* argv[]) {
     std::string code = get_file_contents(argv[1]);
     code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
@@ -73,54 +177,49 @@ int main(int argc, char* argv[]) {
 
     auto code_size = (int) code.size();
 
+    Command compiled[12000] = {};
+    compile(code, compiled);
+
     while (code_pointer < code_size) {
-        int duplicates = 1;
-        switch (code[code_pointer]) {
-            case BF_OP_PINC :
-                while (code[code_pointer + duplicates] == '>') {duplicates++;}
+        int duplicates = compiled[code_pointer].duplicates;
+
+        switch (compiled[code_pointer].command_type) {
+            case CommandType::POINTER_INC:
                 cell_pointer += duplicates;
                 while (cell_pointer >= cells.size()) {
                     cells.push_back(0);
                 }
                 break;
-            case BF_OP_PDEC :
-                while (code[code_pointer + duplicates] == '<') {duplicates++;}
+            case CommandType::POINTER_DEC:
                 cell_pointer -= duplicates;
                 break;
-            case BF_OP_VINC :
-                while (code[code_pointer + duplicates] == '+') {duplicates++;}
+            case CommandType::VALUE_INC:
                 cells[cell_pointer] += duplicates;
                 if (cells[cell_pointer] > 255) {
                     cells[cell_pointer] -= 255;
                 }
                 break;
-            case BF_OP_VDEC :
-                while (code[code_pointer + duplicates] == '-') {duplicates++;}
+            case CommandType::VALUE_DEC:
                 cells[cell_pointer] -= duplicates;
                 if (cells[cell_pointer] < 0) {
                     cells[cell_pointer] += 255;
                 }
                 break;
-            case BF_OP_OUT :
+            case CommandType::OUT:
                 std::printf("%c", cells[cell_pointer]);
-                break;/*
-            case BF_OP_IN :
-                cells[cell_pointer] = getchar();
-                break;*/
-            case BF_OP_LSTART :
-                if (code[code_pointer + 1] == BF_OP_VDEC && code[code_pointer + 2] == BF_OP_LEND) {
-                    cells[cell_pointer] = 0;
-                    duplicates = 3;
-                    break;
-                }
+                break;
+            case CommandType::BRACK_LEFT:
                 if (cells[cell_pointer] == 0) {
                     code_pointer = bracket_index[code_pointer];
                 }
                 break;
-            case BF_OP_LEND :
+            case CommandType::BRACK_RIGHT:
                 if (cells[cell_pointer] != 0) {
                     code_pointer = bracket_index[code_pointer];
                 }
+                break;
+            case CommandType::CLEAR:
+                cells[code_pointer] = 0;
         }
         code_pointer += duplicates;
     }
