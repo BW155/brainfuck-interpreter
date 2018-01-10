@@ -166,28 +166,28 @@ int main(int argc, char* argv[]) {
         int duplicates = command.duplicates;
 
         switch (command.command_type) {
-            case CommandType::POINTER_INC:
+            case POINTER_INC:
                 cell_pointer += duplicates;
                 if (cell_pointer >= cells.size()) {
                     cells.resize(cell_pointer + 1);
                 }
                 break;
-            case CommandType::POINTER_DEC:
+            case POINTER_DEC:
                 cell_pointer -= duplicates;
                 break;
-            case CommandType::VALUE_INC:
+            case VALUE_INC:
                 cells[cell_pointer] += duplicates;
                 if (cells[cell_pointer] > 255) {
                     cells[cell_pointer] -= 255;
                 }
                 break;
-            case CommandType::VALUE_DEC:
+            case VALUE_DEC:
                 cells[cell_pointer] -= duplicates;
                 if (cells[cell_pointer] < 0) {
                     cells[cell_pointer] += 255;
                 }
                 break;
-            case CommandType::OUT:
+            case OUT:
                 std::printf("%c", cells[cell_pointer]);
                 break;
             case CommandType::BRACK_LEFT:
@@ -195,12 +195,12 @@ int main(int argc, char* argv[]) {
                     code_pointer = command.pointer;
                 }
                 break;
-            case CommandType::BRACK_RIGHT:
+            case BRACK_RIGHT:
                 if (cells[cell_pointer] != 0) {
                     code_pointer = command.pointer;
                 }
                 break;
-            case CommandType::CLEAR:
+            case CLEAR:
                 cells[cell_pointer] = 0;
                 break;
             case IN:
