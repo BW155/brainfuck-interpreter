@@ -151,6 +151,13 @@ void compile(std::string code, Command (&result)[12000]) {
                 };
                 cur_command_row = -1;
                 break;
+            case BF_OP_IN:
+                result[p] = Command {
+                    CommandType::IN,
+                    1
+                };
+                cur_command_row = -1;
+                break;
         }
         p++;
     }
