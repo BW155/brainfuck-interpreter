@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
     code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
 
     std::vector<int> cells = {0};
-    int cell_pointer = 0;
+    unsigned int cell_pointer = 0;
     unsigned int code_pointer = 0;
 
     auto code_size = (int) code.size();
@@ -176,8 +176,8 @@ int main(int argc, char* argv[]) {
         switch (command.command_type) {
             case CommandType::POINTER_INC:
                 cell_pointer += duplicates;
-                while (cell_pointer >= cells.size()) {
-                    cells.push_back(0);
+                if (cell_pointer >= cells.size()) {
+                    cells.resize(cell_pointer + 1);
                 }
                 break;
             case CommandType::POINTER_DEC:
@@ -210,6 +210,9 @@ int main(int argc, char* argv[]) {
                 break;
             case CommandType::CLEAR:
                 cells[cell_pointer] = 0;
+                break;
+            case IN:
+                cells[cell_pointer] = getchar();
                 break;
         }
         code_pointer += duplicates;
