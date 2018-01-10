@@ -27,26 +27,6 @@ std::string get_file_contents(const char *filename) {
     throw(errno);
 }
 
-std::map<unsigned int, unsigned int> index_brackets(std::string code) {
-    std::vector<unsigned int> temp_brackets = {};
-    std::map<unsigned int, unsigned int> bracket_index = std::map<unsigned int, unsigned int>();
-
-    for (unsigned int i = 0; i < code.size(); i++) {
-        char command = code[i];
-        switch(command) {
-            case '[' :
-                temp_brackets.push_back(i);
-                break;
-            case ']':
-                auto start = temp_brackets[temp_brackets.size() - 1];
-                temp_brackets.pop_back();
-                bracket_index[start] = i;
-                bracket_index[i] = start;
-        }
-    }
-    return bracket_index;
-}
-
 std::deque<unsigned int> index_clears(std::string code) {
     std::deque<unsigned int> clears = {};
 
@@ -77,12 +57,17 @@ enum CommandType {
 struct Command {
     CommandType command_type;
     unsigned int duplicates;
+    unsigned int pointer;
 };
 
 void compile(std::string code, Command (&result)[12000]) {
+    std::vector<unsigned int> temp_brackets = {};
     std::vector<char> temp_chars = {};
     int cur_command_row = -1;
-    for(int p = 0; p < code.size(); p++) {
+    unsigned int start;
+
+    unsigned int p = 0;
+    while (p < code.size()) {
         if (cur_command_row == -1) {
             cur_command_row = p;
         }
@@ -132,26 +117,30 @@ void compile(std::string code, Command (&result)[12000]) {
                 }
                 break;
             case BF_OP_LSTART:
-                /*if (code[p + 1] == '-' && code[p + 2] == ']') {
+                if (code[p + 1] == '-' && code[p + 2] == ']') {
                     result[p] = Command {
                         CommandType::CLEAR,
                         3
                     };
                     cur_command_row = -1;
-                    temp_chars.clear();
                     p += 2;
                     break;
-                }*/
+                }
                 result[p] = Command {
                     CommandType::BRACK_LEFT,
                     1
                 };
                 cur_command_row = -1;
+                temp_brackets.push_back(p);
                 break;
             case BF_OP_LEND:
+                start = temp_brackets[temp_brackets.size() - 1];
+                temp_brackets.pop_back();
+                result[start].pointer = p;
                 result[p] = Command {
                     CommandType::BRACK_RIGHT,
-                    1
+                    1,
+                    start
                 };
                 cur_command_row = -1;
                 break;
@@ -163,16 +152,16 @@ void compile(std::string code, Command (&result)[12000]) {
                 cur_command_row = -1;
                 break;
         }
+        p++;
     }
 }
 
 int main(int argc, char* argv[]) {
     std::string code = get_file_contents(argv[1]);
     code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
-    std::map<unsigned int, unsigned int> bracket_index = index_brackets(code);
 
     std::vector<int> cells = {0};
-    unsigned int cell_pointer = 0;
+    int cell_pointer = 0;
     unsigned int code_pointer = 0;
 
     auto code_size = (int) code.size();
@@ -181,9 +170,10 @@ int main(int argc, char* argv[]) {
     compile(code, compiled);
 
     while (code_pointer < code_size) {
-        int duplicates = compiled[code_pointer].duplicates;
+        Command command = compiled[code_pointer];
+        int duplicates = command.duplicates;
 
-        switch (compiled[code_pointer].command_type) {
+        switch (command.command_type) {
             case CommandType::POINTER_INC:
                 cell_pointer += duplicates;
                 while (cell_pointer >= cells.size()) {
@@ -210,16 +200,17 @@ int main(int argc, char* argv[]) {
                 break;
             case CommandType::BRACK_LEFT:
                 if (cells[cell_pointer] == 0) {
-                    code_pointer = bracket_index[code_pointer];
+                    code_pointer = command.pointer;
                 }
                 break;
             case CommandType::BRACK_RIGHT:
                 if (cells[cell_pointer] != 0) {
-                    code_pointer = bracket_index[code_pointer];
+                    code_pointer = command.pointer;
                 }
                 break;
             case CommandType::CLEAR:
-                cells[code_pointer] = 0;
+                cells[cell_pointer] = 0;
+                break;
         }
         code_pointer += duplicates;
     }
