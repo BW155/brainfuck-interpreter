@@ -61,7 +61,7 @@ void compile(std::string code, Command (&result)[12000]) {
                 temp_chars.push_back(BF_OP_PINC);
                 if (code[p + 1] != BF_OP_PINC) {
                     result[cur_command_row] = Command {
-                        CommandType::POINTER_INC,
+                        POINTER_INC,
                         static_cast<unsigned int>(temp_chars.size())
                     };
                     cur_command_row = -1;
@@ -72,7 +72,7 @@ void compile(std::string code, Command (&result)[12000]) {
                 temp_chars.push_back(BF_OP_PDEC);
                 if (code[p + 1] != BF_OP_PDEC) {
                     result[cur_command_row] = Command {
-                        CommandType::POINTER_DEC,
+                        POINTER_DEC,
                         static_cast<unsigned int>(temp_chars.size())
                     };
                     cur_command_row = -1;
@@ -83,7 +83,7 @@ void compile(std::string code, Command (&result)[12000]) {
                 temp_chars.push_back(BF_OP_VINC);
                 if (code[p + 1] != BF_OP_VINC) {
                     result[cur_command_row] = Command {
-                        CommandType::VALUE_INC,
+                        VALUE_INC,
                         static_cast<unsigned int>(temp_chars.size())
                     };
                     cur_command_row = -1;
@@ -94,7 +94,7 @@ void compile(std::string code, Command (&result)[12000]) {
                 temp_chars.push_back(BF_OP_VDEC);
                 if (code[p + 1] != BF_OP_VDEC) {
                     result[cur_command_row] = Command {
-                        CommandType::VALUE_DEC,
+                        VALUE_DEC,
                         static_cast<unsigned int>(temp_chars.size())
                     };
                     cur_command_row = -1;
@@ -104,7 +104,7 @@ void compile(std::string code, Command (&result)[12000]) {
             case BF_OP_LSTART:
                 if (code[p + 1] == '-' && code[p + 2] == ']') {
                     result[p] = Command {
-                        CommandType::CLEAR,
+                        CLEAR,
                         3
                     };
                     cur_command_row = -1;
@@ -112,7 +112,7 @@ void compile(std::string code, Command (&result)[12000]) {
                     break;
                 }
                 result[p] = Command {
-                    CommandType::BRACK_LEFT,
+                    BRACK_LEFT,
                     1
                 };
                 cur_command_row = -1;
@@ -123,7 +123,7 @@ void compile(std::string code, Command (&result)[12000]) {
                 temp_brackets.pop_back();
                 result[start].pointer = p;
                 result[p] = Command {
-                    CommandType::BRACK_RIGHT,
+                    BRACK_RIGHT,
                     1,
                     start
                 };
@@ -131,14 +131,14 @@ void compile(std::string code, Command (&result)[12000]) {
                 break;
             case BF_OP_OUT:
                 result[p] = Command {
-                    CommandType::OUT,
+                    OUT,
                     1
                 };
                 cur_command_row = -1;
                 break;
             case BF_OP_IN:
                 result[p] = Command {
-                    CommandType::IN,
+                    IN,
                     1
                 };
                 cur_command_row = -1;
