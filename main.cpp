@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
     unsigned int cell_pointer = 0;
     unsigned int code_pointer = 0;
 
-    auto code_size = (int) code.size();
+    int code_size = (int) code.size();
 
     Command compiled[12000] = {};
     compile(code, compiled);
